@@ -2,19 +2,18 @@ const crypto = require("crypto");
 
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
-const sendgridTransport = require("nodemailer-sendgrid-transport");
 const { validationResult } = require("express-validator/check");
 require("dotenv").config();
 
 const User = require("../models/user");
 
-const transporter = nodemailer.createTransport(
-  sendgridTransport({
-    auth: {
-      api_key: process.env.SENDGRID_API_KEY,
-    },
-  })
-);
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.NODEMAILER_USER,
+    pass: process.env.NODEMAILER_PASSWORD,
+  },
+});
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash("error");
@@ -153,12 +152,21 @@ exports.postSignup = (req, res, next) => {
     })
     .then((result) => {
       res.redirect("/login");
-      // return transporter.sendMail({
-      //   to: email,
-      //   from: 'shop@node-complete.com',
-      //   subject: 'Signup succeeded!',
-      //   html: '<h1>You successfully signed up!</h1>'
-      // });
+      const mailOptions = {
+        to: email,
+        from: process.env.NODEMAILER_USER,
+        subject: "Signup succeeded!",
+        html: "<h3>Welcome to <strong>eStore</strong>,<br> You successfully signed up!</h3>",
+      };
+
+      // Send email
+      return transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Error occurred:", error);
+        } else {
+          console.log("Email sent:", info.response);
+        }
+      });
     })
     .catch((err) => {
       const error = new Error(err);
@@ -207,14 +215,23 @@ exports.postReset = (req, res, next) => {
       })
       .then((result) => {
         res.redirect("/");
-        transporter.sendMail({
+        const mailOptions = {
           to: req.body.email,
           from: "estorevijay@gmail.com",
           subject: "Password reset",
           html: `
             <p>You requested a password reset</p>
-            <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to set a new password.</p>
+            <p>Click this <a href="http://localhost:4000/reset/${token}">link</a> to set a new password.</p>
           `,
+        };
+
+        // Send email
+        return transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error("Error occurred:", error);
+          } else {
+            console.log("Email sent:", info.response);
+          }
         });
       })
       .catch((err) => {
