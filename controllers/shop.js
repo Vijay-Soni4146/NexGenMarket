@@ -160,7 +160,7 @@ exports.getCheckout = (req, res, next) => {
         line_items: products.map(p => {
           return {
             price_data: {
-              currency: 'usd',
+              currency: 'inr',
               product_data: {
                 name: p.productId.title,
                 description: p.productId.description,
@@ -307,12 +307,12 @@ exports.getInvoice = (req, res, next) => {
               ' - ' +
               prod.quantity +
               ' x ' +
-              '$' +
+              '₹' +
               prod.product.price
           );
       });
       pdfDoc.text('---');
-      pdfDoc.fontSize(20).text('Total Price: $' + totalPrice);
+      pdfDoc.fontSize(20).text('Total Price: ₹' + totalPrice);
 
       pdfDoc.end();
       // fs.readFile(invoicePath, (err, data) => {

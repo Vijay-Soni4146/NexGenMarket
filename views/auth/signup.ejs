@@ -1,45 +1,179 @@
 <%- include('../includes/head.ejs') %>
-    <link rel="stylesheet" href="/css/forms.css">
-    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="/css/signup.css">
 </head>
 
 <body>
    <%- include('../includes/navigation.ejs') %>
 
-    <main>
+    <main class="container">
         <% if (errorMessage) { %>
             <div class="user-message user-message--error"><%= errorMessage %></div>
         <% } %>
-        <form class="login-form" action="/signup" method="POST" novalidate>
-            <div class="form-control">
-                <label for="email">E-Mail</label>
-                <input 
-                    class="<%= validationErrors.find(e => e.param === 'email') ? 'invalid' : '' %>"
-                    type="email" 
-                    name="email" 
-                    id="email" 
-                    value="<%= oldInput.email %>">
-            </div>
-            <div class="form-control">
-                <label for="password">Password</label>
-                <input 
-                    class="<%= validationErrors.find(e => e.param === 'password') ? 'invalid' : '' %>"
-                    type="password" 
-                    name="password" 
-                    id="password" 
-                    value="<%= oldInput.password %>">
-            </div>
-            <div class="form-control">
-                <label for="confirmPassword">Confirm Password</label>
-                <input 
-                    class="<%= validationErrors.find(e => e.param === 'confirmPassword') ? 'invalid' : '' %>"
-                    type="password" 
-                    name="confirmPassword" 
-                    id="confirmPassword" 
-                    value="<%= oldInput.confirmPassword %>">
-            </div>
+        <div class="login-container">
+        <form class="login-form" id="form" action="/signup" method="POST">
+          <h1>Welcome</h1>
+          <p>Join us today and start your journey!</p>
+          <div class="input-group">
+            <input type="email" placeholder="Email" name="email" id="email" maxlength="20" value="<%= oldInput.email %>" required>
+            <div id="error-msg-email" style="display: none; color:red"></div>
+              <% if(validationErrors) { %>
+                <% const emailError = validationErrors.find(e => e.path === 'email') %>
+                <% if(emailError){ %>
+                  <p style="color:red"><%= emailError.msg %></p>
+               <% } %>
+            <% } %>
+          </div>
+          <div class="input-group">
+            <input type="password" id="password" name="password" placeholder="Password" maxlength="20" value="<%= oldInput.password %>" required>
+            <div id="password-strength"></div>
+              <% if(validationErrors) { %>
+                <% const passwordError = validationErrors.find(e => e.path === 'password') %>
+                <% if(passwordError){ %>
+                  <p style="color:red"><%= passwordError.msg %></p>
+               <% } %>
+            <% } %>
+          </div>
+          <div class="input-group">
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" maxlength="20" value="<%= oldInput.confirmPassword %>" required>
+            <div id="password-match"></div>
+              <% if(validationErrors) { %>
+                <% const confirmPasswordError = validationErrors.find(e => e.path === 'confirmPassword') %>
+                <% if(confirmPasswordError){ %>
+                  <p style="color:red"><%= confirmPasswordError.msg %></p>
+               <% } %>
+            <% } %>
+          </div>
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn" type="submit">Signup</button>
+          <button type="submit" id="submitBtn">Sign Up</button>
+          <div class="bottom-text">
+            <p>Have an account? <a href="/login">Login</a></p>
+          </div>
         </form>
+      </div>
     </main>
+    <script>
+
+      document.addEventListener("DOMContentLoaded", function() {
+
+          var submitBtn = document.getElementById('submitBtn');
+
+    var passwordInput = document.getElementById("password");
+    var passwordStrengthMessage = document.getElementById("password-strength");
+
+    passwordInput.addEventListener("input", function() {
+        var password = passwordInput.value;
+        var strength = calculatePasswordStrength(password);
+
+        if(strength == "too_short"){
+          passwordStrengthMessage.innerText = "Password is too short.Atleast contains 3 character";
+          passwordStrengthMessage.style.color = "red";
+          submitBtn.disabled = true;
+        } else if (strength == "strong") {
+            passwordStrengthMessage.innerText = "Your password is strong and secure.";
+            passwordStrengthMessage.style.color = "green";
+            submitBtn.disabled = false;
+        } else if (strength == "medium") {
+            passwordStrengthMessage.innerText = "Your password is of medium strength. Consider adding numbers or special characters for increased security.";
+            passwordStrengthMessage.style.color = "orange";
+            submitBtn.disabled = false;
+        } else {
+            passwordStrengthMessage.innerText = "Password is too weak.Consider using a combination of letters, numbers, and special characters.";
+            passwordStrengthMessage.style.color = "red";
+            submitBtn.disabled = true;
+        }
+    });
+
+          var emailInput = document.getElementById("email");
+          var errorMsgEmail = document.getElementById("error-msg-email");
+      
+          emailInput.addEventListener("input", function() {
+              var email = emailInput.value.trim();
+              var isValid = validateEmail(email);
+      
+              if (isValid) {
+                errorMsgEmail.style.display = "none";
+                  submitBtn.disabled = false;
+              } else {
+                  errorMsgEmail.style.display = "block";
+                  errorMsgEmail.innerText = "Please enter a valid email address";
+                  errorMsgEmail.style.color = "red";
+                  submitBtn.disabled = true;
+              }
+          });
+      
+          function validateEmail(email) {
+              // Regular expression for email validation
+              var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              return emailRegex.test(email);
+          }
+
+    function calculatePasswordStrength(password) {
+        // Check password criteria (length, uppercase, lowercase, numbers, special characters)
+        var minLength = 3
+        var length = password.length >= 8;
+        var hasUppercase = /[A-Z]/.test(password);
+        var hasLowercase = /[a-z]/.test(password);
+        var hasNumber = /\d/.test(password);
+        var hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+        // Calculate password strength based on criteria met
+        if(password.length < minLength){
+          return "too_short";
+        }
+        else if (length && hasUppercase && hasLowercase && hasNumber && hasSpecialChar) {
+            return "strong";
+        } else if ((length && hasUppercase && hasLowercase && hasNumber) || (length && hasUppercase && hasLowercase && hasSpecialChar)) {
+            return "medium";
+        } else {
+            return "weak";
+        }
+    }
+
+    var errorPasswordMatch = document.getElementById("password-match");
+    // Function to validate that password and confirm password match
+function passwordsMatch(password, confirmPassword) {
+    return password === confirmPassword;
+}
+ 
+function hideError() {
+    errorPasswordMatch.style.display = "none"; // Hide error message
+    submitBtn.disabled = false;
+}
+ 
+function validateForm() {
+    const passwordEntered = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+ 
+     if (!passwordEntered || !confirmPassword) {
+        hideError(); // Hide error message when either field is empty
+    submitBtn.disabled = false;
+        return;
+    }
+ 
+    if (passwordsMatch(passwordEntered, confirmPassword)) {
+        hideError(); // Hide error message when passwords match
+    submitBtn.disabled = false;
+        return;
+    } else {
+        errorPasswordMatch.style.display = "block";
+        errorPasswordMatch.innerText = "Password and confirm password do not match.";
+        errorPasswordMatch.style.color = "red";
+        submitBtn.disabled = true;
+    }
+}
+ 
+const passwordEnteredInput = document.getElementById("password");
+const confirmPasswordInput = document.getElementById("confirmPassword");
+ 
+// Call validateForm function whenever passwords are entered
+passwordEnteredInput.addEventListener("input", validateForm);
+confirmPasswordInput.addEventListener("input", validateForm);
+ 
+    const form = document.getElementById("form");
+    form.addEventListener("submit", function(event) {
+        validateForm();
+    });
+
+      });
+      </script>
 <%- include('../includes/end.ejs') %>
