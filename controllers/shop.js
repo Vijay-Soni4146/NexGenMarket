@@ -282,8 +282,11 @@ exports.getInvoice = (req, res, next) => {
         return next(new Error('Unauthorized'));
       }
       const invoiceName = 'invoice-' + orderId + '.pdf';
-      const parentDir = path.resolve(__dirname, "..");
-      const invoicePath = path.join(parentDir, "data", "invoices", invoiceName);
+      // const parentDir = path.resolve(__dirname, "..");
+      // const invoicePath = path.join(parentDir, "data", "invoices", invoiceName);
+
+      const writableDir = "/tmp"; // Writable directory in AWS Lambda
+      const invoicePath = path.join(writableDir, invoiceName);
 
       const pdfDoc = new PDFDocument();
       res.setHeader('Content-Type', 'application/pdf');
