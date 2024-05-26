@@ -14,7 +14,7 @@
           <h1>Welcome Back</h1>
           <p>Please login to your account</p>
           <div class="input-group">
-            <input type="email" id="email" name="email" placeholder="Email" maxlength="20" value="<%= oldInput.email %>" required>
+            <input type="email" id="email" name="email" placeholder="Email" maxlength="50" value="<%= oldInput.email %>" required>
             <div id="error-msg" style="display: none;"></div>
             <% if(validationErrors) { %>
               <% const emailError = validationErrors.find(e => e.path === 'email') %>
@@ -24,7 +24,7 @@
           <% } %>
           </div>
           <div class="input-group">
-            <input type="password" id="password" name="password" placeholder="Password" maxlength="20" value="<%= oldInput.password %>" required>
+            <input type="password" id="password" name="password" placeholder="Password" maxlength="30" value="<%= oldInput.password %>" required>
             <div id="error-msg-pass" style="display: none;"></div>
             <% if(validationErrors) { %>
               <% const passwordError = validationErrors.find(e => e.path === 'password') %>
